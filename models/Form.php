@@ -60,22 +60,21 @@ class Form {
 		$tags = $data['tags'];
 		$recommendation = json_encode($data['recommendation']);
 		$time = date('Y-m-d');
-		$fieldsList = ', ';
-		$valueList = ', ';
+		$fieldsList = '';
+		$valueList = '';
 		$searchInput = '';
-
 
 		// 0 - name
 		// 1 - value
 		for ($i = 0; $i < count($tags); $i++) {
 			$tag = $tags[$i];
-
+			
 			if (!stripos($fieldsList, $tag[0]) && $tag[0] != 'searchText') {
 				$fieldsList .= $tag[0];
 				$valueList .= "'".$tag[1]."'";
 			}
 
-			if ($i + 1 < count($tags)) {
+			if ($i + 1 < count($tags) && $tag[0] != 'searchText') {
 				$fieldsList .= ',';
 				$valueList .= ',';
 			}
@@ -83,12 +82,17 @@ class Form {
 			if ($tag[0] == 'searchText') $searchInput .= $tag[1] . " ";
 		}
 
+		if (strlen($fieldsList) > 0 && strlen($valueList) > 0 && strlen($searchInput) > 0) {
+			$fieldsList .= ',';
+			$valueList .= ',';
+		}
+
 		if (strlen($searchInput) > 0) {
 			$fieldsList .= 'searchText';
 			$valueList .= "'".$searchInput."'";
 		}
 
-		$result = $db->prepare("INSERT INTO answer(weights, marks, recommendation, time".$fieldsList.") VALUES (:weights, :marks, :recommendation, :time ".$valueList.")");
+		$result = $db->prepare("INSERT INTO answer(weights, marks, recommendation, time, ".$fieldsList.") VALUES (:weights, :marks, :recommendation, :time, ".$valueList.")");
 		$result->bindParam(":weights", $weights, PDO::PARAM_STR);
 		$result->bindParam(":marks", $marks, PDO::PARAM_STR);
 		$result->bindParam(":recommendation", $recommendation, PDO::PARAM_STR);

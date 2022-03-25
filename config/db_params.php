@@ -2,7 +2,7 @@
 
 return array(
 	'host' => 'localhost',
-	'dbname' => 'dbName',
-	'user' => 'root',
-	'password' => 'root',
+	'dbname' => 'vfbsacby_anketa',
+	'user' => 'vfbsacby_anketa',
+	'password' => 'UW4Z)RUeLs)(',
 );
