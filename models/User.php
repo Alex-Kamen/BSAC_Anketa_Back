@@ -1,5 +1,6 @@
 <?php
 require_once(ROOT."/components/Db.php");
+require_once(ROOT."/models/Specialization.php");
 
 class User {
 	public static function checkAuthData($login, $password) {
@@ -35,13 +36,15 @@ class User {
 				'id' => $row['id'], 
 				'login' => $row['login'],
 				'status' => $row['status'], 
+				'specializationId' => Specialization::getSpecializationIdByUserId($row['id']),
+				'specializationName'=> Specialization::getSpecializationNameByUserId($row['id'])
 			);
 		}
 
 		return $userList;
 	}
 
-	public static function addUser($userLogin, $userPassword, $userStatus) {
+	public static function addUser($userLogin, $userPassword, $userStatus, $userSpecialization) {
 		$db = Db::getConnection();
 
 		$result = $db->prepare("INSERT INTO user (login, password, status) VALUES (:login, :password, :status)");
@@ -49,9 +52,19 @@ class User {
 		$result->bindParam(":password", $userPassword, PDO::PARAM_STR);
 		$result->bindParam(":status", $userStatus, PDO::PARAM_STR);
 		$result->execute();
+
+		$user = User::checkAuthData($userLogin, $userPassword);
+
+		if ($user['status'] == 'student') {
+			$userId = $user['id'];
+			$result = $db->prepare("INSERT INTO student (specializationId, studentId) VALUES (:specializationId, :studentId)");
+			$result->bindParam(":specializationId", $userSpecialization, PDO::PARAM_INT);
+			$result->bindParam(":studentId", $userId, PDO::PARAM_INT);
+			$result->execute();
+		} 
 	}
 
-	public static function editUser($id, $userLogin, $userPassword, $userStatus) {
+	public static function editUser($id, $userLogin, $userPassword, $userStatus, $userSpecialization) {
 		$db = Db::getConnection();
 
 		if ($userPassword != '') {
@@ -69,6 +82,19 @@ class User {
 			$result->execute();
 		}
 
+		$specializationId = Specialization::getSpecializationIdByUserId($id);
+
+		if (isset($specializationId)) {
+			$result = $db->prepare("UPDATE student SET specializationId = :specializationId WHERE studentId = :id");
+			$result->bindParam(":specializationId", $userSpecialization, PDO::PARAM_INT);
+			$result->bindParam(":id", $id, PDO::PARAM_INT);
+			$result->execute();
+		} else {
+			$result = $db->prepare("INSERT INTO student (specializationId, studentId) VALUES (:specializationId, :studentId)");
+			$result->bindParam(":specializationId", $userSpecialization, PDO::PARAM_INT);
+			$result->bindParam(":studentId", $id, PDO::PARAM_INT);
+			$result->execute();
+		}
 		
 	}
 
@@ -76,6 +102,10 @@ class User {
 		$db = Db::getConnection();
 
 		$result = $db->prepare("DELETE FROM user WHERE id = :id");
+		$result->bindParam(":id", $id, PDO::PARAM_INT);
+		$result->execute();
+
+		$result = $db->prepare("DELETE FROM student WHERE studentId = :id");
 		$result->bindParam(":id", $id, PDO::PARAM_INT);
 		$result->execute();
 	}

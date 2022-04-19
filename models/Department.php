@@ -58,4 +58,15 @@ class Department {
 		$result->bindParam(":id", $id, PDO::PARAM_INT);
 		$result->execute();
 	}
+
+	public static function getDepartmentIdByUserId($userId) {
+		$db = Db::getConnection();
+
+		$result = $db->prepare("SELECT * FROM departmentmanager WHERE id = :id");
+		$result->bindParam(":id", $userId, PDO::PARAM_INT);
+		$result->execute();
+		$row = $result->fetch();
+
+		return $row['departmentId'];
+	}
 }

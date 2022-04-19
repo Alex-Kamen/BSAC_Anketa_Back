@@ -1,11 +1,11 @@
 <?php
-require_once(ROOT."/models/User.php");
+require_once(ROOT."/models/Specialization.php");
 
-class UserController {
+class SpecializationController {
 	public function actionList() {
-		$userList = User::getUserList();
+		$specializationList = Specialization::getSpecializationList();
 
-		echo json_encode($userList);
+		echo json_encode($specializationList);
 
 		return true;
 	}
@@ -13,7 +13,7 @@ class UserController {
 	public function actionAdd() {
 		$data = json_decode(file_get_contents('php://input'), true);
 
-		User::addUser($data['login'], $data['password'], $data['status'], $data['specialization']);
+		Specialization::addSpecialization($data['name'], $data['specialityId']);
 
 		return true;
 	}
@@ -21,7 +21,7 @@ class UserController {
 	public function actionEdit() {
 		$data = json_decode(file_get_contents('php://input'), true);
 
-		User::editUser($data['id'], $data['login'], $data['password'], $data['status'], $data['specialization']);
+		Specialization::editSpecialization($data['id'], $data['name'], $data['specialityId']);
 
 		return true;
 	}
@@ -29,7 +29,7 @@ class UserController {
 	public function actionDelete() {
 		$data = json_decode(file_get_contents('php://input'), true);
 
-		User::deleteUser($data['id']);
+		Specialization::deleteSpecialization($data['id']);
 
 		return true;
 	}
